@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ movie_data.movie_title }} — recflix</title>
+  <link rel="icon" type="image/png" href="{% static 'images/iron_man.png' %}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red: #E50914; --red-hover: #F40612; --bg: #141414; --surface: #1f1f1f; --surface2: #2a2a2a; --border: rgba(255,255,255,0.08); --text: #fff; --muted: #999; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 64px; background: rgba(20,20,20,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--red); letter-spacing: 2px; text-decoration: none; }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 16px; border-radius: 6px; transition: all 0.2s; }
+    .nav-links a:hover { color: var(--text); background: var(--surface2); }
+    .nav-links a.active { color: var(--red); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-user { font-size: 13px; color: var(--muted); }
+    .nav-user strong { color: var(--text); }
+    .logout-btn { font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text); background: var(--red); border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .logout-btn:hover { background: var(--red-hover); }
+    .detail-hero { margin-top: 64px; padding: 64px 48px 48px; display: flex; gap: 48px; align-items: flex-start; background: linear-gradient(135deg, #1a0000 0%, #141414 70%); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+    .detail-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 10% 50%, rgba(229,9,20,0.1) 0%, transparent 55%); }
+    .poster { position: relative; z-index: 1; flex: 0 0 200px; width: 200px; height: 300px; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); }
+    .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .poster-placeholder { width: 100%; height: 100%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 64px; }
+    .detail-info { position: relative; z-index: 1; flex: 1; padding-top: 12px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; text-decoration: none; margin-bottom: 20px; transition: color 0.2s; }
+    .back-link:hover { color: var(--text); }
+    .detail-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 4vw, 60px); letter-spacing: 1px; line-height: 1; margin-bottom: 16px; }
+    .meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .rating-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: #fbbf24; }
+    .genre-tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
+    .plot { font-size: 15px; line-height: 1.7; color: #ccc; max-width: 640px; margin-bottom: 28px; }
+    .rate-label { font-size: 13px; color: var(--muted); margin-bottom: 10px; font-weight: 500; }
+    .stars { display: flex; gap: 6px; }
+    .star-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 22px; width: 44px; height: 44px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .star-btn:hover { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #fbbf24; transform: scale(1.1); }
+    .rate-msg { margin-top: 10px; font-size: 13px; color: var(--red); min-height: 18px; }
+    .section { padding: 40px 48px 16px; }
+    .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 22px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; }
+    .section-badge { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); background: rgba(229,9,20,0.1); border: 1px solid rgba(229,9,20,0.25); border-radius: 4px; padding: 3px 8px; }
+    .divider { height: 1px; background: var(--border); margin: 0 48px; }
+    .card-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+    .card-row::-webkit-scrollbar { display: none; }
+    .card { flex: 0 0 140px; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); text-decoration: none; color: var(--text); display: block; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+    .card:hover { transform: translateY(-5px) scale(1.03); border-color: rgba(229,9,20,0.4); box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
+    .card-img { width: 100%; height: 196px; object-fit: cover; display: block; background: var(--surface2); }
+    .card-img-placeholder { width: 100%; height: 196px; background: linear-gradient(135deg, #2a2a2a, #1a1a1a); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+    .card-body { padding: 10px; }
+    .card-title { font-size: 12px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    footer { padding: 40px 48px; border-top: 1px solid var(--border); margin-top: 48px; }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red); letter-spacing: 2px; margin-bottom: 8px; }
+    .footer-logo span { color: var(--muted); }
+    footer p { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="{% url 'movies:home' %}" class="nav-logo">Rec<span>Flix</span></a>
+  <div class="nav-links">
+    <a href="{% url 'movies:home' %}" class="active">Movies</a>
+    <a href="{% url 'books:home' %}">Books</a>
+    <a href="{% url 'tvshows:home' %}">TV Shows</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user">Hi, <strong>{{ user }}</strong></span>
+    <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="detail-hero">
+  <div class="poster">
+    {% if movie_data.movie_link %}<img src="{{ movie_data.movie_link }}" alt="{{ movie_data.movie_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="poster-placeholder" style="display:none">🎬</div>{% else %}<div class="poster-placeholder">🎬</div>{% endif %}
+  </div>
+  <div class="detail-info">
+    <a href="{% url 'movies:home' %}" class="back-link">← Back to Movies</a>
+    <div class="detail-title">{{ movie_data.movie_title }}</div>
+    <div class="meta-row">
+      {% if movie_data.imdb_rating %}<span class="rating-badge">★ {{ movie_data.imdb_rating }} IMDb</span>{% endif %}
+      <span class="genre-tag">{{ movie_data.movie_genre }}</span>
+    </div>
+    <p class="plot">{{ movie_data.movie_plot }}</p>
+    <div class="rate-label">Rate this movie</div>
+    <div class="stars">
+      {% for i in "12345" %}<button class="star-btn" onclick="rateMovie('{{ movie_data.movie_id }}', '{{ i }}')">★</button>{% endfor %}
+    </div>
+    <div class="rate-msg" id="rate-msg"></div>
+  </div>
+</div>
+
+{% if similar_movies %}<div class="section"><div class="section-header"><span class="section-title">Similar Movies</span><span class="section-badge">You May Like</span></div><div class="card-row">{% for p in similar_movies %}<a class="card" href="{% url 'movies:detail' %}?title={{ p.movie_title }}">{% if p.movie_link %}<img class="card-img" src="{{ p.movie_link }}" alt="{{ p.movie_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">🎬</div>{% else %}<div class="card-img-placeholder">🎬</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.movie_title }}</div></div></a>{% endfor %}</div></div><div class="divider"></div>{% endif %}
+
+{% if similar_books %}<div class="section"><div class="section-header"><span class="section-title">Related Books</span><span class="section-badge">Cross-Media</span></div><div class="card-row">{% for p in similar_books %}<a class="card" href="{% url 'books:detail' %}?title={{ p.book_title }}">{% if p.book_link %}<img class="card-img" src="{{ p.book_link }}" alt="{{ p.book_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">📚</div>{% else %}<div class="card-img-placeholder">📚</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.book_title }}</div></div></a>{% endfor %}</div></div><div class="divider"></div>{% endif %}
+
+{% if similar_tvshows %}<div class="section"><div class="section-header"><span class="section-title">Related TV Shows</span><span class="section-badge">Cross-Media</span></div><div class="card-row">{% for p in similar_tvshows %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">📺</div>{% else %}<div class="card-img-placeholder">📺</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+<footer><div class="footer-logo">Rec<span>Flix</span></div><p>AI-powered recommendations for movies, books & TV shows.</p></footer>
+
+<script>
+function rateMovie(movieId, rating) {
+  fetch('/api/rate/?item_type=movie&item_id=' + movieId + '&rating=' + rating)
+    .then(() => { document.getElementById('rate-msg').textContent = 'Rated ' + rating + ' star(s)!'; })
+    .catch(() => { document.getElementById('rate-msg').textContent = 'Rating saved!'; });
+}
+</script>
+</body>
+</html>

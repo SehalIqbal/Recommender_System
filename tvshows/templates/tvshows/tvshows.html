@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>recflix — TV Shows</title>
+  <link rel="icon" type="image/png" href="{% static 'images/iron_man.png' %}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red: #E50914; --red-hover: #F40612; --bg: #141414; --surface: #1f1f1f; --surface2: #2a2a2a; --border: rgba(255,255,255,0.08); --text: #fff; --muted: #999; --accent: #34d399; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 64px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--red); letter-spacing: 2px; text-decoration: none; }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 16px; border-radius: 6px; transition: all 0.2s; }
+    .nav-links a:hover { color: var(--text); background: var(--surface2); }
+    .nav-links a.active { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-user { font-size: 13px; color: var(--muted); }
+    .nav-user strong { color: var(--text); }
+    .logout-btn { font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text); background: var(--red); border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .logout-btn:hover { background: var(--red-hover); }
+    .hero { margin-top: 64px; padding: 80px 48px 60px; background: linear-gradient(135deg, #001a0d 0%, #141414 60%); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(52,211,153,0.08) 0%, transparent 60%); }
+    .hero-label { font-size: 12px; font-weight: 600; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+    .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 6vw, 80px); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 480px; }
+    .section { padding: 48px 48px 16px; }
+    .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; }
+    .section-badge { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); border-radius: 4px; padding: 3px 8px; }
+    .divider { height: 1px; background: var(--border); margin: 0 48px; }
+    .card-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+    .card-row::-webkit-scrollbar { display: none; }
+    .card { flex: 0 0 160px; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); text-decoration: none; color: var(--text); display: block; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+    .card:hover { transform: translateY(-6px) scale(1.03); border-color: rgba(52,211,153,0.4); box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
+    .card-img { width: 100%; height: 220px; object-fit: cover; display: block; background: var(--surface2); }
+    .card-img-placeholder { width: 100%; height: 220px; background: linear-gradient(135deg, #2a2a2a, #1a1a1a); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+    .card-body { padding: 12px; }
+    .card-title { font-size: 13px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-genre { font-size: 11px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-rating { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #fbbf24; margin-top: 6px; }
+    footer { padding: 40px 48px; border-top: 1px solid var(--border); margin-top: 48px; }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red); letter-spacing: 2px; margin-bottom: 8px; }
+    .footer-logo span { color: var(--muted); }
+    footer p { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="{% url 'movies:home' %}" class="nav-logo">Rec<span>Flix</span></a>
+  <div class="nav-links">
+    <a href="{% url 'movies:home' %}">Movies</a>
+    <a href="{% url 'books:home' %}">Books</a>
+    <a href="{% url 'tvshows:home' %}" class="active">TV Shows</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user">Hi, <strong>{{ user }}</strong></span>
+    <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Binge-Worthy Content</div>
+  <h1>Discover TV Shows</h1>
+  <p>From drama to sci-fi — your next obsession is one click away.</p>
+</div>
+
+<div class="section">
+  <div class="section-header"><span class="section-title">Popular Now</span><span class="section-badge">Trending</span></div>
+  <div class="card-row">
+    {% for p in popular_shows %}
+    <a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">
+      {% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">📺</div>{% else %}<div class="card-img-placeholder">📺</div>{% endif %}
+      <div class="card-body"><div class="card-title">{{ p.show_title }}</div><div class="card-genre">{{ p.show_genre }}</div>{% if p.show_rating %}<div class="card-rating">★ {{ p.show_rating }}</div>{% endif %}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="divider"></div>
+
+{% if action %}<div class="section"><div class="section-header"><span class="section-title">Action</span></div><div class="card-row">{% for p in action %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">💥</div>{% else %}<div class="card-img-placeholder">💥</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if horror %}<div class="section"><div class="section-header"><span class="section-title">Horror</span></div><div class="card-row">{% for p in horror %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">👻</div>{% else %}<div class="card-img-placeholder">👻</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if scifi %}<div class="section"><div class="section-header"><span class="section-title">Sci-Fi</span></div><div class="card-row">{% for p in scifi %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">🚀</div>{% else %}<div class="card-img-placeholder">🚀</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if comedy %}<div class="section"><div class="section-header"><span class="section-title">Comedy</span></div><div class="card-row">{% for p in comedy %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">😂</div>{% else %}<div class="card-img-placeholder">😂</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if romance %}<div class="section"><div class="section-header"><span class="section-title">Romance</span></div><div class="card-row">{% for p in romance %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">❤️</div>{% else %}<div class="card-img-placeholder">❤️</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if crime %}<div class="section"><div class="section-header"><span class="section-title">Crime</span></div><div class="card-row">{% for p in crime %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">🔍</div>{% else %}<div class="card-img-placeholder">🔍</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+{% if drama %}<div class="section"><div class="section-header"><span class="section-title">Drama</span></div><div class="card-row">{% for p in drama %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">🎭</div>{% else %}<div class="card-img-placeholder">🎭</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
+
+<div class="divider"></div>
+
+<div class="section" style="padding-bottom:48px">
+  <div class="section-header"><span class="section-title">Picked For You</span><span class="section-badge">AI Powered</span></div>
+  <div class="card-row">
+    {% for p in personalized %}
+    <a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">
+      {% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">📺</div>{% else %}<div class="card-img-placeholder">📺</div>{% endif %}
+      <div class="card-body"><div class="card-title">{{ p.show_title }}</div><div class="card-genre">{{ p.show_genre }}</div></div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<footer><div class="footer-logo">Rec<span>Flix</span></div><p>AI-powered recommendations for movies, books & TV shows.</p></footer>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+  <rect width="800" height="300" rx="20" fill="#141414"/>
+
+  <!-- Film strip top -->
+  <rect x="0" y="0" width="800" height="40" fill="#1a1a1a"/>
+  <rect x="20" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="76" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="132" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="188" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="244" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="300" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="356" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="412" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="468" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="524" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="580" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="636" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="692" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="748" y="8" width="36" height="24" rx="5" fill="#0d0d0d"/>
+
+  <!-- Film strip bottom -->
+  <rect x="0" y="260" width="800" height="40" fill="#1a1a1a"/>
+  <rect x="20" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="76" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="132" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="188" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="244" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="300" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="356" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="412" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="468" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="524" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="580" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="636" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="692" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+  <rect x="748" y="268" width="36" height="24" rx="5" fill="#0d0d0d"/>
+
+  <!-- REC text in red -->
+  <text x="60" y="210" font-family="Impact, Arial Black, sans-serif" font-size="170" fill="#E50914">REC</text>
+
+  <!-- FLIX text in white -->
+  <text x="430" y="210" font-family="Impact, Arial Black, sans-serif" font-size="170" fill="white">FLIX</text>
+
+  <!-- Red dot on the C acting as a record button -->
+  <circle cx="406" cy="100" r="16" fill="#E50914"/>
+  <circle cx="406" cy="100" r="8" fill="#ff4444"/>
+
+  <!-- Tagline -->
+  <text x="400" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#555" letter-spacing="6">YOUR WORLD OF ENTERTAINMENT</text>
+</svg>
