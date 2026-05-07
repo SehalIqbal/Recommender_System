@@ -22,8 +22,15 @@ def book_home(request):
     data['comedy']=comedy
     data['drama']=drama
     data['history']=history
-    data['personalized']=personalized
-    #TODO render code
+    data['user']=str(request.user)
+
+    if personalized == 'not_enough':
+        data['personalized'] = []
+        data['not_enough_ratings'] = True
+    else:
+        data['personalized'] = personalized
+        data['not_enough_ratings'] = False
+
     return render(request,'books/books.html',data)
 
 @login_required
@@ -42,7 +49,6 @@ def book_detail(request):
             data['already_rated'] = True
             data['rating_value']=str(q.rating)
 
-
     similar_movies,similar_tvshows = books_utils.get_similar_content(book_data['book_id'])
 
     data['book_data']=book_data
@@ -51,7 +57,6 @@ def book_detail(request):
     data['similar_tvshows'] = similar_tvshows
     data['user']=str(request.user)
 
-    #TODO render code
     return render(request,'books/book_details.html',data)
 
 @login_required
@@ -60,5 +65,4 @@ def rate_book(request):
     book_id=request.GET["book_id"]
     rating=request.GET["rating"]
     books_utils.rate_book(username,book_id,rating)
-    #TODO render code
     return HttpResponse("{'message':'success'}")

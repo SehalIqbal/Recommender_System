@@ -59,6 +59,7 @@
   </div>
   <div class="nav-right">
     <span class="nav-user">Hi, <strong>{{ user }}</strong></span>
+    <button class="logout-btn" style="background:#555; margin-right:8px;" onclick="resetRatings()">Reset Ratings</button>
     <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
   </div>
 </nav>
@@ -97,10 +98,16 @@
 
 {% if drama %}<div class="section"><div class="section-header"><span class="section-title">Drama</span></div><div class="card-row">{% for p in drama %}<a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">{% if p.show_link %}<img class="card-img" src="{{ p.show_link }}" alt="{{ p.show_title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-img-placeholder" style="display:none">🎭</div>{% else %}<div class="card-img-placeholder">🎭</div>{% endif %}<div class="card-body"><div class="card-title">{{ p.show_title }}</div></div></a>{% endfor %}</div></div>{% endif %}
 
-<div class="divider"></div>
-
 <div class="section" style="padding-bottom:48px">
-  <div class="section-header"><span class="section-title">Picked For You</span><span class="section-badge">AI Powered</span></div>
+  <div class="section-header">
+    <span class="section-title">Picked For You</span>
+    <span class="section-badge">AI Powered</span>
+  </div>
+  {% if not_enough_ratings %}
+  <p style="color: var(--muted); font-size: 14px; padding: 20px 0;">
+    Rate at least <strong style="color: var(--text);">3 TV shows</strong> to get personalised recommendations!
+  </p>
+  {% elif personalized %}
   <div class="card-row">
     {% for p in personalized %}
     <a class="card" href="{% url 'tvshows:detail' %}?title={{ p.show_title }}">
@@ -109,8 +116,24 @@
     </a>
     {% endfor %}
   </div>
+  {% else %}
+  <p style="color: var(--muted); font-size: 14px; padding: 20px 0;">
+    No recommendations yet. Start rating TV shows!
+  </p>
+  {% endif %}
 </div>
 
 <footer><div class="footer-logo">Rec<span>Flix</span></div><p>AI-powered recommendations for movies, books & TV shows.</p></footer>
+<script>
+function resetRatings() {
+  if (confirm('Are you sure you want to reset all your ratings? This cannot be undone.')) {
+    fetch('/api/reset/')
+      .then(() => {
+        alert('All ratings cleared!');
+        window.location.reload();
+      });
+  }
+}
+</script>
 </body>
 </html>

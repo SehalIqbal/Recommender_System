@@ -25,10 +25,14 @@ def movie_home(request):
     data['personalized']=personalized
     data['animation']=animation
     data['user']=str(request.user)
+    
+    # Handle not enough ratings message
+    if personalized == 'not_enough':
+        data['personalized'] = []
+        data['not_enough_ratings'] = True
+    else:
+        data['not_enough_ratings'] = False
 
-    #print(similar_items('m12'))
-
-    #TODO render code
     return render(request,'movies/movies.html',data)
 
 @login_required

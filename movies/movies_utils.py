@@ -113,34 +113,79 @@ def similar_movies(title):
     return final
 
 def personalized_movies(username):
-    ratings = pd.read_csv(rating_path)
-    reader = Reader()
-    data = Dataset.load_from_df(ratings[['username', 'movie_id', 'rating']], reader)
-    svd = SVD()
-    cross_validate(svd, data, measures=['RMSE'], cv=5)
+    try:
+        from collections import Counter
+        rated = Movie_Rating.objects.filter(username=username)
 
-    temp=[]
-    obj=Movie.objects.all()
-    for i in obj:
-        temp.append([i.movie_id,i.movie_title,svd.predict(username,i.movie_id).est])
-    temp.sort(key= lambda x:x[2],reverse=True)
-    ans=[]
-    print('predicted_ratings',temp)
-    rated=Movie_Rating.objects.filter(username=username)
-    already_rated=[]
-    for i in rated:
-        already_rated.append(i.movie_id)
-    j=0
-    for i in temp:
-        if(j>11):
-            break
-        if(i[0] not in already_rated):
-            ans.append(i[1])
-            j+=1
-    final=[]
-    for i in ans:
-        final.append(get_movie_details(i))
-    return final
+        if len(rated) < 3:
+            return 'not_enough'
+
+        genre_weights = Counter()
+        genre_movie_count = Counter()  # how many movies each genre appears in
+        already_rated = []
+
+        for r in rated:
+            already_rated.append(r.movie_id)
+            movie = Movie.objects.filter(movie_id=r.movie_id).first()
+            if movie:
+                genres = movie.movie_genre.split(',')
+                rating = float(r.rating)
+                for g in genres:
+                    g = g.strip()
+                    genre_movie_count[g] += 1
+                    if rating >= 5:
+                        genre_weights[g] += 2
+                    elif rating >= 4:
+                        genre_weights[g] += 1
+                    elif rating <= 2:
+                        genre_weights[g] -= 1
+
+        # Only keep genres that appear in at least 2 rated movies
+        qualified_genres = {g: w for g, w in genre_weights.items()
+                           if genre_movie_count[g] >= 2 and w > 0}
+
+        # If no qualified genres fall back to top IMDb
+        if not qualified_genres:
+            all_movies = Movie.objects.all()
+            candidates = [m for m in all_movies if m.movie_id not in already_rated]
+            candidates.sort(key=lambda x: float(x.imdb_rating) if x.imdb_rating else 0, reverse=True)
+            final = []
+            for movie in candidates[:12]:
+                details = get_movie_details(movie.movie_title)
+                if details:
+                    final.append(details)
+            return final
+
+        # Sort qualified genres by weight
+        sorted_genres = sorted(qualified_genres.items(), key=lambda x: x[1], reverse=True)
+        primary_genre = sorted_genres[0][0]
+        secondary_genre = sorted_genres[1][0] if len(sorted_genres) > 1 else None
+
+        # Find candidates with primary genre
+        all_movies = Movie.objects.all()
+        candidates = []
+        for movie in all_movies:
+            if movie.movie_id not in already_rated:
+                if primary_genre in movie.movie_genre:
+                    candidates.append(movie)
+
+        # If less than 5 results add secondary genre
+        if len(candidates) < 5 and secondary_genre:
+            for movie in all_movies:
+                if movie.movie_id not in already_rated and movie not in candidates:
+                    if secondary_genre in movie.movie_genre:
+                        candidates.append(movie)
+
+        candidates.sort(key=lambda x: float(x.imdb_rating) if x.imdb_rating else 0, reverse=True)
+
+        final = []
+        for movie in candidates[:12]:
+            details = get_movie_details(movie.movie_title)
+            if details:
+                final.append(details)
+        return final
+    except:
+        return []
 
 def rate_movie(username,movie_id,rating):
     qSet=Movie_Rating.objects.filter(username=username,movie_id=movie_id)

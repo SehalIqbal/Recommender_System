@@ -106,34 +106,74 @@ def similar_shows(title):
 
 
 def personalized_shows(username):
-    ratings = pd.read_csv(rating_path)
-    reader = Reader()
-    data = Dataset.load_from_df(ratings[['username', 'show_id', 'rating']], reader)
-    svd = SVD()
-    cross_validate(svd, data, measures=['RMSE'], cv=5)
+    try:
+        from collections import Counter
+        rated = Show_Rating.objects.filter(username=username)
 
-    temp=[]
-    obj=Show.objects.all()
-    for i in obj:
-        temp.append([i.show_id,i.show_title,svd.predict(username,i.show_id).est])
-    temp.sort(key= lambda x:x[2],reverse=True)
-    ans=[]
-    rated=Show_Rating.objects.filter(username=username)
-    already_rated=[]
-    for i in rated:
-        already_rated.append(i.show_id)
-    j=0
-    for i in temp:
-        if(j>11):
-            break
-        if(i[0] not in already_rated):
-            ans.append(i[1])
-            j+=1
+        if len(rated) < 3:
+            return 'not_enough'
 
-    final=[]
-    for i in ans:
-        final.append(get_show_details(i))
-    return final
+        genre_weights = Counter()
+        genre_show_count = Counter()
+        already_rated = []
+
+        for r in rated:
+            already_rated.append(r.show_id)
+            show = Show.objects.filter(show_id=r.show_id).first()
+            if show:
+                genres = show.show_genre.split(',')
+                rating = float(r.rating)
+                for g in genres:
+                    g = g.strip()
+                    genre_show_count[g] += 1
+                    if rating >= 5:
+                        genre_weights[g] += 2
+                    elif rating >= 4:
+                        genre_weights[g] += 1
+                    elif rating <= 2:
+                        genre_weights[g] -= 1
+
+        qualified_genres = {g: w for g, w in genre_weights.items()
+                           if genre_show_count[g] >= 2 and w > 0}
+
+        if not qualified_genres:
+            all_shows = Show.objects.all()
+            candidates = [s for s in all_shows if s.show_id not in already_rated]
+            candidates.sort(key=lambda x: float(x.show_rating) if x.show_rating else 0, reverse=True)
+            final = []
+            for show in candidates[:12]:
+                details = get_show_details(show.show_title)
+                if details:
+                    final.append(details)
+            return final
+
+        sorted_genres = sorted(qualified_genres.items(), key=lambda x: x[1], reverse=True)
+        primary_genre = sorted_genres[0][0]
+        secondary_genre = sorted_genres[1][0] if len(sorted_genres) > 1 else None
+
+        all_shows = Show.objects.all()
+        candidates = []
+        for show in all_shows:
+            if show.show_id not in already_rated:
+                if primary_genre in show.show_genre:
+                    candidates.append(show)
+
+        if len(candidates) < 5 and secondary_genre:
+            for show in all_shows:
+                if show.show_id not in already_rated and show not in candidates:
+                    if secondary_genre in show.show_genre:
+                        candidates.append(show)
+
+        candidates.sort(key=lambda x: float(x.show_rating) if x.show_rating else 0, reverse=True)
+
+        final = []
+        for show in candidates[:12]:
+            details = get_show_details(show.show_title)
+            if details:
+                final.append(details)
+        return final
+    except:
+        return []
 
 def rate_show(username,show_id,rating):
     qSet=Show_Rating.objects.filter(username=username,show_id=show_id)

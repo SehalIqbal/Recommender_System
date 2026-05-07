@@ -24,8 +24,15 @@ def show_home(request):
     data['romance']=romance
     data['crime'] = crime
     data['drama'] = drama
-    data['personalized']=personalized
-    #TODO render code
+    data['user']=str(request.user)
+
+    if personalized == 'not_enough':
+        data['personalized'] = []
+        data['not_enough_ratings'] = True
+    else:
+        data['personalized'] = personalized
+        data['not_enough_ratings'] = False
+
     return render(request,'tvshows/tvshows.html',data)
 
 @login_required
@@ -52,7 +59,6 @@ def show_detail(request):
     data['similar_books']=similar_books
     data['user']=str(request.user)
 
-    #TODO render code
     return render(request,'tvshows/tvshow_details.html',data)
 
 @login_required
@@ -61,5 +67,4 @@ def rate_show(request):
     show_id=request.GET["show_id"]
     rating=request.GET["rating"]
     shows_utils.rate_show(username,show_id,rating)
-    #TODO render code
     return HttpResponse("{'message':'success'}")

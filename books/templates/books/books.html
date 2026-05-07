@@ -59,6 +59,7 @@
   </div>
   <div class="nav-right">
     <span class="nav-user">Hi, <strong>{{ user }}</strong></span>
+    <button class="logout-btn" style="background:#555; margin-right:8px;" onclick="resetRatings()">Reset Ratings</button>
     <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
   </div>
 </nav>
@@ -96,7 +97,15 @@
 <div class="divider"></div>
 
 <div class="section" style="padding-bottom:48px">
-  <div class="section-header"><span class="section-title">Picked For You</span><span class="section-badge">AI Powered</span></div>
+  <div class="section-header">
+    <span class="section-title">Picked For You</span>
+    <span class="section-badge">AI Powered</span>
+  </div>
+  {% if not_enough_ratings %}
+  <p style="color: var(--muted); font-size: 14px; padding: 20px 0;">
+    Rate at least <strong style="color: var(--text);">3 books</strong> to get personalised recommendations!
+  </p>
+  {% elif personalized %}
   <div class="card-row">
     {% for p in personalized %}
     <a class="card" href="{% url 'books:detail' %}?title={{ p.book_title }}">
@@ -105,8 +114,24 @@
     </a>
     {% endfor %}
   </div>
+  {% else %}
+  <p style="color: var(--muted); font-size: 14px; padding: 20px 0;">
+    No recommendations yet. Start rating books!
+  </p>
+  {% endif %}
 </div>
 
 <footer><div class="footer-logo">Rec<span>Flix</span></div><p>AI-powered recommendations for movies, books & TV shows.</p></footer>
+<script>
+function resetRatings() {
+  if (confirm('Are you sure you want to reset all your ratings? This cannot be undone.')) {
+    fetch('/api/reset/')
+      .then(() => {
+        alert('All ratings cleared!');
+        window.location.reload();
+      });
+  }
+}
+</script>
 </body>
 </html>

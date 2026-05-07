@@ -18,16 +18,15 @@ rating_path=os.path.abspath('datasets/book_ratings.csv')
 
 def get_book_details(title):
     try:
-        qSet=Book.objects.filter(book_title=title)
-        qSet=qSet[0]
-        qSet=Book.objects.get(book_title=title)
-        ans={}
-        ans['book_title']=qSet.book_title
-        ans['book_id']=qSet.book_id
-        ans['book_plot']=qSet.book_plot[:150]
-        ans['book_genre']=qSet.book_genre
-        ans['book_link']=qSet.book_link
-        ans['book_rating']=qSet.book_rating
+        qSet = Book.objects.filter(book_title__icontains=title.strip())
+        qSet = qSet[0]
+        ans = {}
+        ans['book_title'] = qSet.book_title
+        ans['book_id'] = qSet.book_id
+        ans['book_plot'] = qSet.book_plot[:150]
+        ans['book_genre'] = qSet.book_genre
+        ans['book_link'] = qSet.book_link
+        ans['book_rating'] = qSet.book_rating
         return ans
     except:
         pass
@@ -122,35 +121,73 @@ def similar_books(title):
 
 def personalized_books(username):
     try:
-        ratings = pd.read_csv(rating_path)
-        reader = Reader()
-        data = Dataset.load_from_df(ratings[['username', 'book_id', 'rating']], reader)
-        svd = SVD()
-        cross_validate(svd, data, measures=['RMSE'], cv=5)
+        from collections import Counter
+        rated = Book_Rating.objects.filter(username=username)
 
-        temp=[]
-        obj=Book.objects.all()
-        for i in obj:
-            temp.append([i.book_id,i.book_title,svd.predict(username,i.book_id).est])
-        temp.sort(key= lambda x:x[2],reverse=True)
-        ans=[]
-        rated=Book_Rating.objects.filter(username=username)
-        already_rated=[]
-        for i in rated:
-            already_rated.append(i.book_id)
-        j=0
-        for i in temp:
-            if(j>11):
-                break
-            if(i[0] not in already_rated):
-                ans.append(i[1])
-                j+=1
-        final=[]
-        for i in ans:
-            final.append(get_book_details(i))
+        if len(rated) < 3:
+            return 'not_enough'
+
+        genre_weights = Counter()
+        genre_book_count = Counter()
+        already_rated = []
+
+        for r in rated:
+            already_rated.append(r.book_id)
+            book = Book.objects.filter(book_id=r.book_id).first()
+            if book:
+                genres = book.book_genre.split(',')
+                rating = float(r.rating)
+                for g in genres:
+                    g = g.strip()
+                    genre_book_count[g] += 1
+                    if rating >= 5:
+                        genre_weights[g] += 2
+                    elif rating >= 4:
+                        genre_weights[g] += 1
+                    elif rating <= 2:
+                        genre_weights[g] -= 1
+
+        qualified_genres = {g: w for g, w in genre_weights.items()
+                           if genre_book_count[g] >= 2 and w > 0}
+
+        if not qualified_genres:
+            all_books = Book.objects.all()
+            candidates = [b for b in all_books if b.book_id not in already_rated]
+            candidates.sort(key=lambda x: float(x.book_rating) if x.book_rating else 0, reverse=True)
+            final = []
+            for book in candidates[:12]:
+                details = get_book_details(book.book_title)
+                if details:
+                    final.append(details)
+            return final
+
+        sorted_genres = sorted(qualified_genres.items(), key=lambda x: x[1], reverse=True)
+        primary_genre = sorted_genres[0][0]
+        secondary_genre = sorted_genres[1][0] if len(sorted_genres) > 1 else None
+
+        all_books = Book.objects.all()
+        candidates = []
+        for book in all_books:
+            if book.book_id not in already_rated:
+                if primary_genre in book.book_genre:
+                    candidates.append(book)
+
+        if len(candidates) < 5 and secondary_genre:
+            for book in all_books:
+                if book.book_id not in already_rated and book not in candidates:
+                    if secondary_genre in book.book_genre:
+                        candidates.append(book)
+
+        candidates.sort(key=lambda x: float(x.book_rating) if x.book_rating else 0, reverse=True)
+
+        final = []
+        for book in candidates[:12]:
+            details = get_book_details(book.book_title)
+            if details:
+                final.append(details)
         return final
     except:
-        pass
+        return []
 
 def rate_book(username,book_id,rating):
     try:
