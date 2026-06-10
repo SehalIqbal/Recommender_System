@@ -1,10 +1,10 @@
-# 🎬 RecFlix — AI-Powered Entertainment Recommendation System
+# RecFlix — AI-Powered Entertainment Recommendation System
 
 RecFlix is a full-stack web application that recommends movies, books, and TV shows using a hybrid recommendation engine combining content-based filtering and collaborative filtering. Built with Django and Python, it delivers personalized entertainment suggestions across three media types in a modern Netflix-inspired interface.
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Cross-media recommendations** — Discover movies related to books you love, or TV shows similar to movies you've watched
 - **Personalized homepage** — AI-powered picks tailored to your individual taste based on your rating history
