@@ -15,7 +15,7 @@ RecFlix is a full-stack web application that recommends movies, books, and TV sh
 
 ---
 
-## 🧠 How the Recommendation System Works
+## How the Recommendation System Works
 
 RecFlix uses a **hybrid recommendation approach** combining two distinct algorithms that work together to deliver accurate and personalized suggestions.
 
@@ -95,7 +95,7 @@ Items are identified by prefixed IDs (`m_` for movies, `b_` for books, `t_` for 
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -148,7 +148,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 recflix/
@@ -165,7 +165,7 @@ recflix/
 
 ---
 
-## 📊 Datasets
+## Datasets
 
 RecFlix uses three curated CSV datasets:
 
@@ -180,7 +180,7 @@ RecFlix uses three curated CSV datasets:
 
 ---
 
-## 🎯 Recommendation Algorithm Summary
+## Recommendation Algorithm Summary
 
 | Feature | Algorithm | Library |
 |---|---|---|
@@ -204,15 +204,3 @@ RecFlix uses three curated CSV datasets:
 6. Explore cross-media recommendations on detail pages to discover books related to movies you love
 
 ---
-
-## ⚠️ Known Limitations
-
-- The SVD model is retrained on every page load — for production, this should be cached or pre-computed
-- Some image URLs from the original dataset may be expired and fall back to placeholder icons
-- Titles containing special characters like `&` may cause URL parsing issues in some browsers
-
----
-
-## 📝 License
-
-This project was built for educational purposes as part of a university course project.
